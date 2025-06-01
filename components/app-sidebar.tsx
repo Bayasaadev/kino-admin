@@ -15,33 +15,26 @@ import {
   IconUsers,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
+import { NavFilms } from "@/components/nav-films"
+import { NavUsers } from "@/components/nav-users"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "./providers/auth-provider"
+import Link from "next/link"
 
 const data = {
-  user: {
-    name: "Admin",
-    email: "admin@example.com",
-    avatar: "/avatars/admin.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/",
-      icon: IconDashboard,
-    },
+  navFilms: [
     {
       title: "Films",
       url: "/films",
@@ -71,7 +64,9 @@ const data = {
       title: "Languages",
       url: "/languages",
       icon: IconFileWord,
-    },
+    }    
+  ],
+  navUsers: [
     {
       title: "Users",
       url: "/users",
@@ -94,7 +89,6 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  
   const { user } = useAuth()
 
   return (
@@ -115,8 +109,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <SidebarGroup>
+          <SidebarGroupContent className="flex flex-col">
+            <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Dashboard" asChild>
+                    <Link href="/">
+                      <IconDashboard />
+                      <span>Dashboard</span>
+                    </Link>                
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <NavFilms items={data.navFilms} />
+        {user?.role === "admin" ? <NavUsers items={data.navUsers} /> : ""}        
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

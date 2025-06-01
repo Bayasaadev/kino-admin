@@ -41,4 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # dashboard
-/app/dashboard
+/app/(protected)/dashboard

@@ -5,12 +5,13 @@ import { type Icon } from "@tabler/icons-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-export function NavMain({
+export function NavUsers({
   items,
 }: {
   items: {
@@ -21,7 +22,8 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
+      <SidebarGroupContent className="flex flex-col">
+        <SidebarGroupLabel>Users</SidebarGroupLabel>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
