@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { login } from "@/lib/api/auth"
 
 export function LoginForm({
   className,
@@ -29,30 +30,12 @@ export function LoginForm({
     setError("")
     setLoading(true)
     try {
-      // Use 'username' if your Django API expects username; else change to 'email'
-      const res = await fetch("http://localhost:8000/api/auth/admin-login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.non_field_errors?.[0] || data.detail || "Login failed")
-        setLoading(false)
-        return
-      }
-      // Store JWT tokens
+      const data = await login(username, password);
       localStorage.setItem("access", data.access)
       localStorage.setItem("refresh", data.refresh)
-      // Redirect to dashboard
       router.push("/")
-    } catch {
-      setError("Network error")
+    } catch (err: any) {
+      setError(err.message || "Network error")
     }
     setLoading(false)
   }

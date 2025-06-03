@@ -1,6 +1,8 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { fetchProfile } from "@/lib/api/auth"
 
 type User = {
   id: number
@@ -19,24 +21,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("access") : null;
+
   if (!token) {
     setUser(null);
     return;
   }
-  fetch("http://localhost:8000/api/auth/profile/", {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-    .then((res) => (res.ok ? res.json() : null))
-    .then((data) => {
-      if (data) setUser(data);
-      else setUser(null);
+
+  fetchProfile(token)
+    .then((profile) => {
+      setUser(profile);
     })
-    .catch(() => setUser(null));
-}, []);
+    .catch((err) => {
+      setUser(null);
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      router.replace("/login");
+    });
+}, [router]);
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>

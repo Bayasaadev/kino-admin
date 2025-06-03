@@ -1,34 +1,44 @@
-import { ReactNode } from "react"
-import { redirect } from "next/navigation"
+"use client"
+
+import { ReactNode, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { cookies } from "next/headers"
 import { AuthProvider } from "@/components/providers/auth-provider"
 
-export default async function ProtectedLayout({ children }: { children: ReactNode }) {
-  // Check token (on the client)
-  if (typeof window !== "undefined") {
+export default function ProtectedLayout({ children }: { children: ReactNode }) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [hasToken, setHasToken] = useState(false)
+
+  useEffect(() => {
     const token = localStorage.getItem("access")
     if (!token) {
-      redirect("/login")
+      router.replace("/login")
+      setLoading(false)
+    } else {
+      setHasToken(true)
+      setLoading(false)
     }
+  }, [router])
+
+  if (loading) {
+    return <div>Loading...</div>
   }
-  
-  const cookieStore = await cookies()
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
+
+  if (!hasToken) {
+    return null
+  }
 
   return (
     <AuthProvider>
       <div className="flex">
         <SidebarProvider
-          defaultOpen={defaultOpen}
-          style={
-            {
-              "--sidebar-width": "calc(var(--spacing) * 72)",
-              "--header-height": "calc(var(--spacing) * 12)",
-            } as React.CSSProperties
-          }
+          style={{
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties}
         >
           <AppSidebar variant="inset" />
           <SidebarInset>
@@ -39,7 +49,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
               </div>
             </div>
           </SidebarInset>
-        </SidebarProvider>      
+        </SidebarProvider>
       </div>
     </AuthProvider>
   )

@@ -1,115 +1,95 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useEffect, useState } from "react"
+import { getUsers } from "@/lib/api/users"
+import { DataTable } from "@/components/ui/data-table"
+import { columns, User } from "./columns"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
-type User = {
-  id: number
-  username: string
-  email: string
-  avatar: string
-  role: string
-}
+const PAGE_SIZE = 20
 
-const roles = ["all", "admin", "staff", "user"]
-
-export default function UsersPage() {
+export default function UsersPage() {  
   const { user } = useAuth()
   const router = useRouter()
-
   const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState("")
-  const [role, setRole] = useState("all")
-  const [page, setPage] = useState(1)
   const [count, setCount] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
+  const [pageIndex, setPageIndex] = useState(0)
+  const [filterInput, setFilterInput] = useState("")
+  const [filter, setFilter] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Only redirect if user is loaded and NOT admin
-    if (user && user.role !== "admin") {
+    if (!user) return
+
+    if (user.role !== "admin") {
       router.replace("/")
+      return
+    }
+
+    const token = localStorage.getItem("access")
+    if (!token) {
+      setError("Not authenticated")
+      setLoading(false)
+      return
     }
 
     setLoading(true)
-    let url = `http://localhost:8000/api/auth/users/?page=${page}`
-    if (search) url += `&search=${search}`
-    if (role !== "all") url += `&role=${role}`
+    setError(null)
 
-    const token = localStorage.getItem("access")
-    fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
+    getUsers(token, pageIndex + 1, filter)
       .then(data => {
         setUsers(data.results || [])
-        setCount(data.count || 0)
-        setTotalPages(Math.ceil((data.count || 1) / 10)) // adjust page size if needed
+        setCount(data.count)
       })
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [user, router, search, role, page])
+  }, [user, router, pageIndex, filter])
 
   if (!user) {
-    // Still loading user info
-    return <div>Loading...</div>
+    return <div>Checking authentication...</div>
   }
 
-  if (user.role !== "admin") {
-    // Optional: brief message (should redirect almost immediately)
-    return <div>Access denied</div>
+  if (loading) {
+    return <div>Loading users...</div>
   }
 
-  // Admin sees the page content
+  if (error) {
+    return <div className="text-red-600">Error: {error}</div>
+  }
+
   return (
-    <div className="p-4">
-      
-      {/* Section cards */}
-      <p>Total users: {count} </p>
-      <p>This month: {count} </p>
-      <p>This year: {count} </p>
-
-      {/* Users table */}
-      <div className="overflow-x-auto">
-        <Table>
-          <TableCaption>A list of your recent invoices.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">Avatar</TableHead>
-              <TableHead>Username</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="text-right">Role</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map(user => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <Avatar className="h-8 w-8 rounded-lg grayscale">
-                    <AvatarImage src={user.avatar} alt={user.username} />
-                    <AvatarFallback className="rounded-lg">
-                      {user.username.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </TableCell>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell className="text-right">{user.role}</TableCell>
-              </TableRow>
-            ))}            
-          </TableBody>
-        </Table>
-      </div>
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="px-4 lg:px-6">
+        <div className="flex gap-2 max-w-xs mb-4">
+          <Input
+            placeholder="Username filter"
+            value={filterInput}
+            onChange={e => {              
+              setFilterInput(e.target.value)
+            }}
+          />
+          <Button
+            onClick={() => {
+              setPageIndex(0)
+              setFilter(filterInput)
+            }}
+          >
+            Search
+          </Button>
+        </div>        
+        <DataTable
+            columns={columns}
+            data={users}
+            pageCount={Math.ceil(count / PAGE_SIZE)}
+            pageIndex={pageIndex}
+            onPageChange={setPageIndex}
+            isLoading={loading}
+          />
+      </div>      
     </div>
   )
 }
