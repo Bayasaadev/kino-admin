@@ -4,7 +4,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  ColumnDef,
+  ColumnDef
 } from "@tanstack/react-table"
 import {
   Table,
@@ -30,7 +30,10 @@ type DataTableProps<TData, TValue> = {
   pageIndex: number
   onPageChange: (page: number) => void
   isLoading?: boolean
+  totalCount: number
 }
+
+const PAGE_SIZE = 10
 
 export function DataTable<TData, TValue>({
   columns,
@@ -39,16 +42,17 @@ export function DataTable<TData, TValue>({
   pageIndex,
   onPageChange,
   isLoading,
+  totalCount
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     pageCount,
     state: {
-      pagination: { pageIndex, pageSize: 10 },
+      pagination: { pageIndex, pageSize: PAGE_SIZE }
     },
     manualPagination: true,
-    getCoreRowModel: getCoreRowModel(),
+    getCoreRowModel: getCoreRowModel()
   })
 
   // For page buttons, display max 5
@@ -112,24 +116,29 @@ export function DataTable<TData, TValue>({
         </TableBody>
       </Table>
 
-      <div className="mt-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => pageIndex > 0 && onPageChange(pageIndex - 1)}
-                className={pageIndex === 0 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-            {renderPageButtons()}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => pageIndex + 1 < pageCount && onPageChange(pageIndex + 1)}
-                className={pageIndex + 1 >= pageCount ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-2 px-1">
+        <div className="text-sm mb-2 md:mb-0 self-start w-full md:w-auto">
+          Total: {data.length > 0 ? `${totalCount} items` : "No items"}
+        </div>
+        <div className="w-full md:w-auto flex justify-end">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => pageIndex > 0 && onPageChange(pageIndex - 1)}
+                  className={pageIndex === 0 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              {renderPageButtons()}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => pageIndex + 1 < pageCount && onPageChange(pageIndex + 1)}
+                  className={pageIndex + 1 >= pageCount ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       </div>
     </div>
   )
