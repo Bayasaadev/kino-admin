@@ -1,23 +1,23 @@
 "use client"
 
 import Link from "next/link"
-import { type Icon } from "@tabler/icons-react"
+import { type LucideIcon } from "lucide-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuItem
 } from "@/components/ui/sidebar"
 
 export function NavFilms({
   items,
 }: {
   items: {
-    title: string
+    title: string    
+    icon?: LucideIcon
     url: string
-    icon?: Icon
   }[]
 }) {
   return (

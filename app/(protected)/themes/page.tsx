@@ -1,0 +1,123 @@
+"use client"
+
+import { useAuth } from "@/components/providers/auth-provider"
+import { useEffect, useState } from "react"
+import { getThemes } from "@/lib/api/themes"
+import { DataTable } from "@/components/ui/data-table"
+import { getThemeColumns, Theme } from "./columns"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { CreateThemeDialog } from "@/components/films/themes/create-theme-dialog"
+
+const PAGE_SIZE = 20
+
+export default function ThemesPage() {  
+  const { user } = useAuth()
+  // Search, Filter, Order, Paginate
+  const [themes, setThemes] = useState<Theme[]>([])
+  const [count, setCount] = useState(0)
+  const [pageIndex, setPageIndex] = useState(0)
+  const [searchInput, setSearchInput] = useState("")
+  const [search, setSearch] = useState("")
+  const [ordering, setOrdering] = useState<string>("-id");
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchThemes = () => {
+    const token = localStorage.getItem("access")
+    if (!token || !user) return
+    setLoading(true)
+    setError(null)
+    getThemes(token, pageIndex + 1, search, ordering)
+      .then(data => {
+        setThemes(data.results || [])
+        setCount(data.count)
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }  
+
+  const columns = getThemeColumns(fetchThemes)
+
+  useEffect(() => {
+    fetchThemes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, pageIndex, search, ordering])
+
+  if (!user) {
+    return <div>Checking authentication...</div>
+  }
+
+  if (loading) {
+    return <div>Loading themes...</div>
+  }
+
+  if (error) {
+    return <div className="text-red-600">Error: {error}</div>
+  }  
+
+  return (
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="px-4 lg:px-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-2 max-w-xs">
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                setPageIndex(0);
+                setSearch(searchInput);
+              }}
+              className="flex gap-2 max-w-xs"
+            >
+              <Input
+                className="w-[240px]"
+                placeholder="Search..."
+                value={searchInput}
+                onChange={e => {              
+                  setSearchInput(e.target.value)
+                }}
+              />
+              <Button type="submit">Search</Button>
+            </form>            
+          </div>  
+          <div className="flex gap-2">
+            <Select
+              value={ordering}
+              onValueChange={value => {
+                setOrdering(value);
+                setPageIndex(0);
+              }}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="-id">Newest</SelectItem>
+                <SelectItem value="id">Earliest</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+                <SelectItem value="-name">Name (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
+            <CreateThemeDialog onSuccess={fetchThemes} />        
+          </div>
+        </div>                  
+        <DataTable
+          columns={columns}
+          data={themes}
+          pageCount={Math.ceil(count / PAGE_SIZE)}
+          pageIndex={pageIndex}
+          onPageChange={setPageIndex}
+          isLoading={loading}
+          totalCount={count}
+        />        
+      </div>      
+    </div>
+  )
+}

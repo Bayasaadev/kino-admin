@@ -2,9 +2,9 @@
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { useEffect, useState } from "react"
-import { getGenres } from "@/lib/api/genres"
+import { getCountries } from "@/lib/api/countries"
 import { DataTable } from "@/components/ui/data-table"
-import { getGenreColumns, Genre } from "./columns"
+import { getCountryColumns, Country } from "./columns"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,14 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { CreateGenreDialog } from "@/components/films/genres/create-genre-dialog"
+import { CreateCountryDialog } from "@/components/films/countries/create-country-dialog"
 
 const PAGE_SIZE = 20
 
-export default function GenresPage() {  
+export default function CountriesPage() {  
   const { user } = useAuth()
-  // Search, Filter, Order, Paginate
-  const [genres, setGenres] = useState<Genre[]>([])
+  // Search, Filter, Order, Paginate  
+  const [countries, setCountries] = useState<Country[]>([])
   const [count, setCount] = useState(0)
   const [pageIndex, setPageIndex] = useState(0)
   const [searchInput, setSearchInput] = useState("")
@@ -30,24 +30,24 @@ export default function GenresPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchGenres = () => {
+  const fetchCountries = () => {
     const token = localStorage.getItem("access")
     if (!token || !user) return
     setLoading(true)
     setError(null)
-    getGenres(token, pageIndex + 1, search, ordering)
+    getCountries(token, pageIndex + 1, search, ordering)
       .then(data => {
-        setGenres(data.results || [])
+        setCountries(data.results || [])
         setCount(data.count)
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }  
 
-  const columns = getGenreColumns(fetchGenres)
+  const columns = getCountryColumns(fetchCountries);
 
   useEffect(() => {
-    fetchGenres()
+    fetchCountries()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, pageIndex, search, ordering])
 
@@ -56,7 +56,7 @@ export default function GenresPage() {
   }
 
   if (loading) {
-    return <div>Loading genres...</div>
+    return <div>Loading countries...</div>
   }
 
   if (error) {
@@ -105,12 +105,12 @@ export default function GenresPage() {
                 <SelectItem value="-name">Name (Z-A)</SelectItem>
               </SelectContent>
             </Select>
-            <CreateGenreDialog onSuccess={fetchGenres} />      
+            <CreateCountryDialog onSuccess={fetchCountries} />        
           </div>
         </div>                  
         <DataTable
           columns={columns}
-          data={genres}
+          data={countries}
           pageCount={Math.ceil(count / PAGE_SIZE)}
           pageIndex={pageIndex}
           onPageChange={setPageIndex}

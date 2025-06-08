@@ -2,9 +2,9 @@
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { useEffect, useState } from "react"
-import { getGenres } from "@/lib/api/genres"
+import { getStudios } from "@/lib/api/studios"
 import { DataTable } from "@/components/ui/data-table"
-import { getGenreColumns, Genre } from "./columns"
+import { getStudioColumns, Studio } from "./columns"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,14 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { CreateGenreDialog } from "@/components/films/genres/create-genre-dialog"
+import { CreateStudioDialog } from "@/components/films/studios/create-studio-dialog"
 
 const PAGE_SIZE = 20
 
-export default function GenresPage() {  
+export default function StudiosPage() {  
   const { user } = useAuth()
   // Search, Filter, Order, Paginate
-  const [genres, setGenres] = useState<Genre[]>([])
+  const [studios, setStudios] = useState<Studio[]>([])
   const [count, setCount] = useState(0)
   const [pageIndex, setPageIndex] = useState(0)
   const [searchInput, setSearchInput] = useState("")
@@ -30,24 +30,25 @@ export default function GenresPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchGenres = () => {
+  const fetchStudios = () => {
     const token = localStorage.getItem("access")
     if (!token || !user) return
     setLoading(true)
     setError(null)
-    getGenres(token, pageIndex + 1, search, ordering)
+    getStudios(token, pageIndex + 1, search, ordering)
       .then(data => {
-        setGenres(data.results || [])
+        console.log(data.results)
+        setStudios(data.results || [])
         setCount(data.count)
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }  
 
-  const columns = getGenreColumns(fetchGenres)
+  const columns = getStudioColumns(fetchStudios)
 
   useEffect(() => {
-    fetchGenres()
+    fetchStudios()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, pageIndex, search, ordering])
 
@@ -56,7 +57,7 @@ export default function GenresPage() {
   }
 
   if (loading) {
-    return <div>Loading genres...</div>
+    return <div>Loading studios...</div>
   }
 
   if (error) {
@@ -105,12 +106,12 @@ export default function GenresPage() {
                 <SelectItem value="-name">Name (Z-A)</SelectItem>
               </SelectContent>
             </Select>
-            <CreateGenreDialog onSuccess={fetchGenres} />      
+            <CreateStudioDialog onSuccess={fetchStudios} />      
           </div>
         </div>                  
         <DataTable
           columns={columns}
-          data={genres}
+          data={studios}
           pageCount={Math.ceil(count / PAGE_SIZE)}
           pageIndex={pageIndex}
           onPageChange={setPageIndex}

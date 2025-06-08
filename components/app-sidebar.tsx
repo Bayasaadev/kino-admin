@@ -12,7 +12,7 @@ import {
   IconListDetails,
   IconReport,
   IconSettings,
-  IconUsers,
+  IconUsers,  
 } from "@tabler/icons-react"
 
 import { NavFilms } from "@/components/nav-films"
@@ -37,33 +37,33 @@ const data = {
   navFilms: [
     {
       title: "Films",
-      url: "/films",
       icon: IconCamera,
+      url: "/films",
     },
     {
-      title: "Genres",
-      url: "/genres",
+      title: "Genres",      
       icon: IconListDetails,
+      url: "/genres",
     },
     {
       title: "Themes",
-      url: "/themes",
       icon: IconFileAi,
+      url: "/themes",
     },
     {
       title: "Studios",
-      url: "/studios",
       icon: IconDatabase,
+      url: "/studios",
     },
     {
       title: "Countries",
-      url: "/countries",
       icon: IconReport,
+      url: "/countries",
     },
     {
       title: "Languages",
-      url: "/languages",
       icon: IconFileWord,
+      url: "/languages",
     }    
   ],
   navUsers: [

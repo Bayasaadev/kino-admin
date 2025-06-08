@@ -33,7 +33,7 @@ type DataTableProps<TData, TValue> = {
   totalCount: number
 }
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 20
 
 export function DataTable<TData, TValue>({
   columns,
@@ -118,7 +118,7 @@ export function DataTable<TData, TValue>({
 
       <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-2 px-1">
         <div className="text-sm mb-2 md:mb-0 self-start w-full md:w-auto">
-          Total: {data.length > 0 ? `${totalCount} items` : "No items"}
+          Total: {`${totalCount} items`}
         </div>
         <div className="w-full md:w-auto flex justify-end">
           <Pagination>

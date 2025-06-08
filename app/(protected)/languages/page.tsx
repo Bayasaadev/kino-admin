@@ -2,9 +2,9 @@
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { useEffect, useState } from "react"
-import { getGenres } from "@/lib/api/genres"
+import { getLanguages } from "@/lib/api/languages"
 import { DataTable } from "@/components/ui/data-table"
-import { getGenreColumns, Genre } from "./columns"
+import { getLanguageColumns, Language } from "./columns"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,14 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { CreateGenreDialog } from "@/components/films/genres/create-genre-dialog"
+import { CreateLanguageDialog } from "@/components/films/languages/create-language-dialog"
 
 const PAGE_SIZE = 20
 
-export default function GenresPage() {  
+export default function LanguagesPage() {  
   const { user } = useAuth()
   // Search, Filter, Order, Paginate
-  const [genres, setGenres] = useState<Genre[]>([])
+  const [languages, setLanguages] = useState<Language[]>([])
   const [count, setCount] = useState(0)
   const [pageIndex, setPageIndex] = useState(0)
   const [searchInput, setSearchInput] = useState("")
@@ -30,24 +30,24 @@ export default function GenresPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchGenres = () => {
+  const fetchLanguages = () => {
     const token = localStorage.getItem("access")
     if (!token || !user) return
     setLoading(true)
     setError(null)
-    getGenres(token, pageIndex + 1, search, ordering)
+    getLanguages(token, pageIndex + 1, search, ordering)
       .then(data => {
-        setGenres(data.results || [])
+        setLanguages(data.results || [])
         setCount(data.count)
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }  
 
-  const columns = getGenreColumns(fetchGenres)
+  const columns = getLanguageColumns(fetchLanguages)
 
   useEffect(() => {
-    fetchGenres()
+    fetchLanguages()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, pageIndex, search, ordering])
 
@@ -56,7 +56,7 @@ export default function GenresPage() {
   }
 
   if (loading) {
-    return <div>Loading genres...</div>
+    return <div>Loading languages...</div>
   }
 
   if (error) {
@@ -105,12 +105,12 @@ export default function GenresPage() {
                 <SelectItem value="-name">Name (Z-A)</SelectItem>
               </SelectContent>
             </Select>
-            <CreateGenreDialog onSuccess={fetchGenres} />      
+            <CreateLanguageDialog onSuccess={fetchLanguages} />   
           </div>
         </div>                  
         <DataTable
           columns={columns}
-          data={genres}
+          data={languages}
           pageCount={Math.ceil(count / PAGE_SIZE)}
           pageIndex={pageIndex}
           onPageChange={setPageIndex}
